@@ -1,10 +1,16 @@
 package entity
 
 type Amount struct {
-	value uint
+	Value uint `json:"amount_value"`
 }
 
 type Account struct {
-	id     string
-	amount Amount
+	AccountID string `json:"account_id"`
+	Amount    Amount
+}
+
+func (c Account) ID() (jsonField string, value interface{}) {
+	value = c.AccountID
+	jsonField = "account_id"
+	return
 }
