@@ -9,8 +9,16 @@ type Account struct {
 	Amount    Amount
 }
 
-func (c Account) ID() (jsonField string, value interface{}) {
-	value = c.AccountID
+func (a Account) ID() (jsonField string, value interface{}) {
+	value = a.AccountID
 	jsonField = "account_id"
 	return
+}
+
+func (a *Account) IncreaseAmount(Amount Amount) {
+	a.Amount.Value = a.Amount.Value + Amount.Value
+}
+
+func (a *Account) DecreaseAmount(Amount Amount) {
+	a.Amount.Value = a.Amount.Value - Amount.Value
 }

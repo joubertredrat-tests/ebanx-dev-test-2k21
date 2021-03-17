@@ -16,7 +16,7 @@ var (
 type AccountRepositoryInterface interface {
 	GetByAccountID(AccountID string) (*entity.Account, error)
 	Insert(account entity.Account) error
-	Update(account entity.Account) error
+	Update(account *entity.Account) error
 }
 
 type AccountRepository struct {
@@ -46,10 +46,10 @@ func (r *AccountRepository) Insert(account entity.Account) error {
 	return nil
 }
 
-func (r *AccountRepository) Update(account entity.Account) error {
+func (r *AccountRepository) Update(account *entity.Account) error {
 	err := r.db.Update(account)
 	if err != nil {
-		return ErrAccountInsert
+		return ErrAccountUpdate
 	}
 	return nil
 }
