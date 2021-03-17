@@ -15,7 +15,7 @@ var (
 
 type AccountServiceInterface interface {
 	GetAccountBalance(AccountID string) (*uint, error)
-	MakeDeposit(AccountID string, Amount entity.Amount) (*entity.Account, error)
+	MakeDeposit(AccountID string, Amount entity.BalanceAmount) (*entity.Account, error)
 }
 
 type AccountService struct {
@@ -38,16 +38,16 @@ func (s *AccountService) GetAccountBalance(AccountID string) (*uint, error) {
 		return nil, ErrHouston
 	}
 
-	return &account.Amount.Value, nil
+	return &account.BalanceAmount.Value, nil
 }
 
-func (s *AccountService) MakeDeposit(AccountID string, Amount entity.Amount) (*entity.Account, error) {
+func (s *AccountService) MakeDeposit(AccountID string, BalanceAmount entity.BalanceAmount) (*entity.Account, error) {
 	account, _ := s.repo.GetByAccountID(AccountID)
 	if account == nil {
-		return s.makeDepositNewAccount(AccountID, Amount)
+		return s.makeDepositNewAccount(AccountID, BalanceAmount)
 	}
 
-	account.IncreaseAmount(Amount)
+	account.IncreaseAmount(BalanceAmount)
 
 	err := s.repo.Update(account)
 	if err != nil {
@@ -56,10 +56,10 @@ func (s *AccountService) MakeDeposit(AccountID string, Amount entity.Amount) (*e
 	return account, nil
 }
 
-func (s *AccountService) makeDepositNewAccount(AccountID string, Amount entity.Amount) (*entity.Account, error) {
+func (s *AccountService) makeDepositNewAccount(AccountID string, BalanceAmount entity.BalanceAmount) (*entity.Account, error) {
 	account := entity.Account{
-		AccountID: AccountID,
-		Amount:    Amount,
+		AccountID:     AccountID,
+		BalanceAmount: BalanceAmount,
 	}
 	err := s.repo.Insert(account)
 	if err != nil {
