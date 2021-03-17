@@ -8,10 +8,13 @@ import (
 )
 
 var (
+	ErrHouston            = errors.New("anything wrong is not right")
+	ErrAccountNotFound    = errors.New("account not found")
 	ErrMakeDepositAccount = errors.New("error on make deposit in account")
 )
 
 type AccountServiceInterface interface {
+	GetAccountBalance(AccountID string) (*uint, error)
 	MakeDeposit(AccountID string, Amount entity.Amount) (*entity.Account, error)
 }
 
@@ -23,6 +26,19 @@ func NewAccountService(repo *repository.AccountRepository) *AccountService {
 	return &AccountService{
 		repo: repo,
 	}
+}
+
+func (s *AccountService) GetAccountBalance(AccountID string) (*uint, error) {
+	account, err := s.repo.GetByAccountID(AccountID)
+	if err != nil {
+		if errors.Is(err, repository.ErrAccountNotFound) {
+			return nil, ErrAccountNotFound
+		}
+
+		return nil, ErrHouston
+	}
+
+	return &account.Amount.Value, nil
 }
 
 func (s *AccountService) MakeDeposit(AccountID string, Amount entity.Amount) (*entity.Account, error) {
