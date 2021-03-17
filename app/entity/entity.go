@@ -15,10 +15,10 @@ func (a Account) ID() (jsonField string, value interface{}) {
 	return
 }
 
-func (a *Account) IncreaseAmount(BalanceAmount BalanceAmount) {
+func (a *Account) IncreaseBalanceAmount(BalanceAmount BalanceAmount) {
 	a.BalanceAmount.Value = a.BalanceAmount.Value + BalanceAmount.Value
 }
 
-func (a *Account) DecreaseAmount(BalanceAmount BalanceAmount) {
+func (a *Account) DecreaseBalanceAmount(BalanceAmount BalanceAmount) {
 	a.BalanceAmount.Value = a.BalanceAmount.Value - BalanceAmount.Value
 }

@@ -8,14 +8,16 @@ import (
 )
 
 var (
-	ErrHouston            = errors.New("anything wrong is not right")
-	ErrAccountNotFound    = errors.New("account not found")
-	ErrMakeDepositAccount = errors.New("error on make deposit in account")
+	ErrHouston             = errors.New("anything wrong is not right")
+	ErrAccountNotFound     = errors.New("account not found")
+	ErrMakeDepositAccount  = errors.New("error on make deposit in account")
+	ErrMakeWithdrawAccount = errors.New("error on make withdraw in account")
 )
 
 type AccountServiceInterface interface {
 	GetAccountBalance(AccountID string) (*uint, error)
 	MakeDeposit(AccountID string, Amount entity.BalanceAmount) (*entity.Account, error)
+	MakeWithdraw(AccountID string, Amount entity.BalanceAmount) (*entity.Account, error)
 }
 
 type AccountService struct {
@@ -47,7 +49,7 @@ func (s *AccountService) MakeDeposit(AccountID string, BalanceAmount entity.Bala
 		return s.makeDepositNewAccount(AccountID, BalanceAmount)
 	}
 
-	account.IncreaseAmount(BalanceAmount)
+	account.IncreaseBalanceAmount(BalanceAmount)
 
 	err := s.repo.Update(account)
 	if err != nil {
@@ -66,4 +68,18 @@ func (s *AccountService) makeDepositNewAccount(AccountID string, BalanceAmount e
 		return nil, ErrMakeDepositAccount
 	}
 	return &account, nil
+}
+
+func (s *AccountService) MakeWithdraw(AccountID string, BalanceAmount entity.BalanceAmount) (*entity.Account, error) {
+	account, _ := s.repo.GetByAccountID(AccountID)
+	if account == nil {
+		return nil, ErrAccountNotFound
+	}
+
+	account.DecreaseBalanceAmount(BalanceAmount)
+	err := s.repo.Update(account)
+	if err != nil {
+		return nil, ErrMakeWithdrawAccount
+	}
+	return account, nil
 }
