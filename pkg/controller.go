@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -35,4 +36,45 @@ func (c *Controller) handleBalance(ctx *gin.Context) {
 	}
 
 	ctx.String(http.StatusOK, strconv.FormatUint(uint64(*accountBalance), 10))
+}
+
+func (c *Controller) handleEvent(ctx *gin.Context) {
+	data, _ := ctx.GetRawData()
+
+	var eventRequest EventRequest
+
+	if err := json.Unmarshal(data, &eventRequest); err != nil {
+		ctx.String(http.StatusInternalServerError, "anything wrong is not right")
+		return
+	}
+
+	if eventRequest.isDeposit() {
+		c.handleEventDeposit(ctx)
+		return
+	}
+
+	if eventRequest.isWithdraw() {
+		c.handleEventWithdraw(ctx)
+		return
+	}
+
+	if eventRequest.isTransfer() {
+		c.handleEventTransfer(ctx)
+		return
+	}
+
+	ctx.String(http.StatusBadRequest, "unknown event type")
+	return
+}
+
+func (c *Controller) handleEventDeposit(ctx *gin.Context) {
+	ctx.String(http.StatusOK, "deposit")
+}
+
+func (c *Controller) handleEventWithdraw(ctx *gin.Context) {
+	ctx.String(http.StatusOK, "withdraw")
+}
+
+func (c *Controller) handleEventTransfer(ctx *gin.Context) {
+	ctx.String(http.StatusOK, "transfer")
 }

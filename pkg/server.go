@@ -23,6 +23,7 @@ func Run() {
 
 	router.POST("/reset", controller.handleReset)
 	router.GET("/balance", controller.handleBalance)
+	router.POST("/event", controller.handleEvent)
 
 	fmt.Println("Server running at http://0.0.0.0:8000")
 	router.Run(":8000")
