@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -22,6 +23,23 @@ func NewController(container *Container) *Controller {
 }
 
 func (c *Controller) handleReset(ctx *gin.Context) {
+	e := os.Remove("data/Account")
+	if e != nil {
+		ctx.String(http.StatusInternalServerError, "anything wrong is not right")
+		return
+	}
+
+	_, err := c.container.accountService.MakeDeposit(
+		"300",
+		entity.BalanceAmount{
+			Value: 0,
+		},
+	)
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, "anything wrong is not right")
+		return
+	}
+
 	ctx.String(http.StatusOK, "OK")
 }
 
