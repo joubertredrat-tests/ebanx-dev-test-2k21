@@ -80,11 +80,14 @@ func (s *AccountService) MakeWithdraw(AccountID string, BalanceAmount entity.Bal
 		return nil, ErrAccountNotFound
 	}
 
-	account.DecreaseBalanceAmount(BalanceAmount)
-	err := s.repo.Update(account)
-	if err != nil {
+	if err := account.DecreaseBalanceAmount(BalanceAmount); err != nil {
+		return nil, err
+	}
+
+	if err := s.repo.Update(account); err != nil {
 		return nil, ErrMakeWithdrawAccount
 	}
+
 	return account, nil
 }
 
