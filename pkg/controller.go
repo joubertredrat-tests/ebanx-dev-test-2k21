@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,5 +28,11 @@ func (c *Controller) handleBalance(ctx *gin.Context) {
 		return
 	}
 
-	ctx.String(http.StatusNotFound, "0")
+	accountBalance, err := c.container.accountService.GetAccountBalance(accountID)
+
+	if err != nil {
+		ctx.String(http.StatusNotFound, "0")
+	}
+
+	ctx.String(http.StatusOK, strconv.FormatUint(uint64(*accountBalance), 10))
 }
