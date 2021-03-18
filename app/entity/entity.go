@@ -1,5 +1,11 @@
 package entity
 
+import "errors"
+
+var (
+	ErrInsufficientFunds = errors.New("insufficient funds on account balance amount")
+)
+
 type BalanceAmount struct {
 	Value uint `json:"balance_amount"`
 }
@@ -19,6 +25,11 @@ func (a *Account) IncreaseBalanceAmount(BalanceAmount BalanceAmount) {
 	a.BalanceAmount.Value = a.BalanceAmount.Value + BalanceAmount.Value
 }
 
-func (a *Account) DecreaseBalanceAmount(BalanceAmount BalanceAmount) {
+func (a *Account) DecreaseBalanceAmount(BalanceAmount BalanceAmount) error {
+	if BalanceAmount.Value > a.BalanceAmount.Value {
+		return ErrInsufficientFunds
+	}
+
 	a.BalanceAmount.Value = a.BalanceAmount.Value - BalanceAmount.Value
+	return nil
 }

@@ -8,16 +8,20 @@ import (
 )
 
 var (
-	ErrHouston             = errors.New("anything wrong is not right")
-	ErrAccountNotFound     = errors.New("account not found")
-	ErrMakeDepositAccount  = errors.New("error on make deposit in account")
-	ErrMakeWithdrawAccount = errors.New("error on make withdraw in account")
+	ErrHouston                    = errors.New("anything wrong is not right")
+	ErrAccountNotFound            = errors.New("account not found")
+	ErrAccountOriginNotFound      = errors.New("origin account not found")
+	ErrAccountDestinationNotFound = errors.New("destination account not found")
+	ErrMakeDepositAccount         = errors.New("error on make deposit in account")
+	ErrMakeWithdrawAccount        = errors.New("error on make withdraw in account")
+	ErrMakeTransferAccounts       = errors.New("error on make tranfer between accounts")
 )
 
 type AccountServiceInterface interface {
 	GetAccountBalance(AccountID string) (*uint, error)
-	MakeDeposit(AccountID string, Amount entity.BalanceAmount) (*entity.Account, error)
-	MakeWithdraw(AccountID string, Amount entity.BalanceAmount) (*entity.Account, error)
+	MakeDeposit(AccountID string, BalanceAmount entity.BalanceAmount) (*entity.Account, error)
+	MakeWithdraw(AccountID string, BalanceAmount entity.BalanceAmount) (*entity.Account, error)
+	MakeTransfer(AccountOriginID, AccountDestinationID string, BalanceAmount entity.BalanceAmount) (*entity.Account, *entity.Account, error)
 }
 
 type AccountService struct {
@@ -82,4 +86,32 @@ func (s *AccountService) MakeWithdraw(AccountID string, BalanceAmount entity.Bal
 		return nil, ErrMakeWithdrawAccount
 	}
 	return account, nil
+}
+
+func (s *AccountService) MakeTransfer(
+	AccountOriginID, AccountDestinationID string,
+	BalanceAmount entity.BalanceAmount,
+) (*entity.Account, *entity.Account, error) {
+	accountOrigin, _ := s.repo.GetByAccountID(AccountOriginID)
+	if accountOrigin == nil {
+		return nil, nil, ErrAccountOriginNotFound
+	}
+	accountDestination, _ := s.repo.GetByAccountID(AccountDestinationID)
+	if accountDestination == nil {
+		return nil, nil, ErrAccountDestinationNotFound
+	}
+
+	if err := accountOrigin.DecreaseBalanceAmount(BalanceAmount); err != nil {
+		return nil, nil, err
+	}
+	accountDestination.IncreaseBalanceAmount(BalanceAmount)
+
+	if err := s.repo.Update(accountOrigin); err != nil {
+		return nil, nil, ErrMakeTransferAccounts
+	}
+	if err := s.repo.Update(accountDestination); err != nil {
+		return nil, nil, ErrMakeTransferAccounts
+	}
+
+	return accountOrigin, accountDestination, nil
 }
